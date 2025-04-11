@@ -10,7 +10,9 @@ export default function Cart () {
         <th className="px-6 py-3 border-b border-gray-200 text-left text-sm font-semibold">Total</th>
       </tr>
     </thead>
+
     <tbody className="bg-white divide-y divide-gray-100">
+      
       <tr className="hover:bg-blue-50 transition">
         <td className="px-6 py-4 text-sm text-gray-700">Portland Cement</td>
         <td className="px-6 py-4 text-sm text-gray-700">₦9800</td>

@@ -53,7 +53,7 @@ export default function NameForm() {
           </div>
           <button
               type="submit" className="text-left underline underline-offset-2 hover:text-green-600 text-blue-500 font-semibold py-2 rounded-md transition w-full">
-              Use GPS Location
+              <Link href={'/MapPage'}>Use GPS Location</Link>
             </button>
 
           <Link href="/CatalogPage">
