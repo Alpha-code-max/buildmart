@@ -56,7 +56,7 @@ export default function NavBar() {
 
               {/* Mobile menu */}
               {isMobileMenuOpen && (
-                <div className="absolute top-16 left-0 right-0 bg-gray-100 dark:bg-gray-800 md:hidden z-50">
+                <div className="absolute top-16 left-0 right-0 bg-gray-100 md:hidden z-50">
                   <div className="container mx-auto px-4 py-2">
                     <div className="flex flex-col space-y-4">
                       <Link
