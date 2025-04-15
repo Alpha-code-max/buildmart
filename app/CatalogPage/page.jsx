@@ -3,7 +3,6 @@
 import LoadingBar from "@/components/Loader";
 import ProductCard from "@/components/ProductCard";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import useCart from "@/store/useCart";
 
 export default function CatalogPage() {
@@ -11,22 +10,34 @@ export default function CatalogPage() {
 
     const fetchProducts = async () => {
         try {
-            const response = await fetch('/api/products');
+            console.log('Fetching products...');
+            const response = await fetch('/api/products', {
+                headers: {
+                    'Accept': 'application/json',
+                },
+            });
+            
             if (!response.ok) {
-                throw new Error('Failed to fetch products');
+                const errorData = await response.json();
+                console.error('API Error:', errorData);
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
             }
+            
             const data = await response.json();
+            console.log('Products fetched successfully:', data.length);
             return data;
         } catch (error) {
-            console.error('Error fetching products:', error);
-            throw new Error('Failed to fetch products');
+            console.error('Error in fetchProducts:', error);
+            throw new Error(error.message || 'Failed to fetch products');
         }
     };
 
-    // React Query hook for data fetching
+    // React Query hook for data fetching with retry logic
     const { data: products, isLoading, error } = useQuery({
         queryKey: ['products'],
         queryFn: fetchProducts,
+        retry: 3,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     });
 
     // Handle loading state
@@ -35,7 +46,19 @@ export default function CatalogPage() {
     // Handle error state
     if (error) {
         console.error('Error state:', error);
-        return <div className="text-red-500 text-center p-4">An error occurred while loading products</div>;
+        return (
+            <div className="text-red-500 text-center p-4">
+                <h2 className="text-xl font-bold mb-2">Error Loading Products</h2>
+                <p className="mb-4">{error.message}</p>
+                <p className="text-sm text-gray-500">Please check your internet connection and try again.</p>
+                <button 
+                    onClick={() => window.location.reload()} 
+                    className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                    Retry
+                </button>
+            </div>
+        );
     }
 
     // Handle empty state

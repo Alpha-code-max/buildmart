@@ -36,21 +36,30 @@ export async function POST(request) {
 
 export async function GET() {
     try {
+        console.log('Attempting to connect to database...');
         const { db } = await connectToDatabase();
         
         if (!db) {
+            console.error('Database connection failed');
             return NextResponse.json(
                 { message: "Database connection not available" },
                 { status: 503 }
             );
         }
         
+        console.log('Database connected, fetching products...');
         const products = await Product.find().lean();
+        console.log(`Found ${products.length} products`);
+        
         return NextResponse.json(products);
     } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error('Error in GET /api/products:', error);
         return NextResponse.json(
-            { message: "Error fetching products", error: error.message },
+            { 
+                message: "Error fetching products", 
+                error: error.message,
+                stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            },
             { status: 500 }
         );
     }
