@@ -11,15 +11,22 @@ export default function CatalogPage() {
     const fetchProducts = async () => {
         try {
             console.log('Fetching products...');
-            const response = await fetch('/api/products', {
+            // Use absolute URL for the API endpoint
+            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || window.location.origin;
+            const response = await fetch(`${baseUrl}/api/products`, {
                 headers: {
                     'Accept': 'application/json',
                 },
+                cache: 'no-store'
             });
             
             if (!response.ok) {
-                const errorData = await response.json();
-                console.error('API Error:', errorData);
+                const errorData = await response.json().catch(() => ({}));
+                console.error('API Error:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    errorData
+                });
                 throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
             }
             

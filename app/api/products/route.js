@@ -2,6 +2,17 @@ import { connectToDatabase } from "@/libs/mongodb";
 import Product from "@/models/product";
 import { NextResponse } from "next/server";
 
+// Add CORS headers
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+export async function OPTIONS() {
+    return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function POST(request) {
     try {
         const { size, name, amount, quality, image } = await request.json();
@@ -43,7 +54,10 @@ export async function GET() {
             console.error('Database connection failed');
             return NextResponse.json(
                 { message: "Database connection not available" },
-                { status: 503 }
+                { 
+                    status: 503,
+                    headers: corsHeaders
+                }
             );
         }
         
@@ -51,7 +65,7 @@ export async function GET() {
         const products = await Product.find().lean();
         console.log(`Found ${products.length} products`);
         
-        return NextResponse.json(products);
+        return NextResponse.json(products, { headers: corsHeaders });
     } catch (error) {
         console.error('Error in GET /api/products:', error);
         return NextResponse.json(
@@ -60,7 +74,10 @@ export async function GET() {
                 error: error.message,
                 stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
             },
-            { status: 500 }
+            { 
+                status: 500,
+                headers: corsHeaders
+            }
         );
     }
 }
