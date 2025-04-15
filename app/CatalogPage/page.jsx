@@ -11,7 +11,6 @@ export default function CatalogPage() {
     const fetchProducts = async () => {
         try {
             console.log('Fetching products...');
-            // Use absolute URL for the API endpoint
             const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || window.location.origin;
             const response = await fetch(`${baseUrl}/api/products`, {
                 headers: {
@@ -20,26 +19,47 @@ export default function CatalogPage() {
                 cache: 'no-store'
             });
             
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                console.error('API Error:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    errorData
-                });
-                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            let data;
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                console.error('Error parsing response:', parseError);
+                throw new Error('Invalid response from server');
             }
             
-            const data = await response.json();
+            if (!response.ok) {
+                const errorInfo = {
+                    status: response.status,
+                    statusText: response.statusText,
+                    error: data?.error || 'Unknown error',
+                    details: data?.details || {}
+                };
+                console.error('API Error:', errorInfo);
+                const error = new Error(data?.message || `HTTP error! status: ${response.status}`);
+                error.details = errorInfo;
+                throw error;
+            }
+            
+            if (!Array.isArray(data)) {
+                console.error('Invalid data format:', data);
+                throw new Error('Invalid data format received from server');
+            }
+            
             console.log('Products fetched successfully:', data.length);
             return data;
         } catch (error) {
             console.error('Error in fetchProducts:', error);
-            throw new Error(error.message || 'Failed to fetch products');
+            // Create a new error with the original message
+            const newError = new Error(error.message || 'Failed to fetch products');
+            // Copy over any existing details or create a new object
+            newError.details = error.details || {
+                type: 'Network Error',
+                message: error.message
+            };
+            throw newError;
         }
     };
 
-    // React Query hook for data fetching with retry logic
     const { data: products, isLoading, error } = useQuery({
         queryKey: ['products'],
         queryFn: fetchProducts,
@@ -47,17 +67,22 @@ export default function CatalogPage() {
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     });
 
-    // Handle loading state
     if (isLoading) return <div><LoadingBar /></div>;
     
-    // Handle error state
     if (error) {
         console.error('Error state:', error);
         return (
             <div className="text-red-500 text-center p-4">
                 <h2 className="text-xl font-bold mb-2">Error Loading Products</h2>
-                <p className="mb-4">{error.message}</p>
-                <p className="text-sm text-gray-500">Please check your internet connection and try again.</p>
+                <p className="mb-2">{error.message}</p>
+                {error.details && (
+                    <div className="text-sm text-gray-600 mb-4">
+                        <p>Error Type: {error.details.type || 'Unknown'}</p>
+                        {error.details.code && <p>Error Code: {error.details.code}</p>}
+                        {error.details.message && <p>Details: {error.details.message}</p>}
+                    </div>
+                )}
+                <p className="text-sm text-gray-500 mb-4">Please check your internet connection and try again.</p>
                 <button 
                     onClick={() => window.location.reload()} 
                     className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -68,9 +93,13 @@ export default function CatalogPage() {
         );
     }
 
-    // Handle empty state
     if (!products || products.length === 0) {
-        return <div className="text-center p-4">No products available</div>;
+        return (
+            <div className="text-center p-4">
+                <h2 className="text-xl font-bold mb-2">No Products Available</h2>
+                <p className="text-gray-600">There are currently no products in the catalog.</p>
+            </div>
+        );
     }
 
     return (

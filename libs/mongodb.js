@@ -1,43 +1,45 @@
-import { MongoClient } from 'mongodb';
+import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-// Only throw error if we're not in a build process
-if (!MONGODB_URI && process.env.NODE_ENV !== 'production') {
+if (!MONGODB_URI) {
     throw new Error('Please define the MONGODB_URI environment variable inside .env');
 }
 
-let cached = global.mongo;
+let cached = global.mongoose;
 
 if (!cached) {
-    cached = global.mongo = { conn: null, promise: null };
+    cached = global.mongoose = { conn: null, promise: null };
 }
 
-export async function connectToDatabase() {
-    if (!MONGODB_URI) {
-        return { db: null, client: null };
-    }
-
+async function connectToDatabase() {
     if (cached.conn) {
         return cached.conn;
     }
 
     if (!cached.promise) {
         const opts = {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
+            bufferCommands: false,
+            maxPoolSize: 10,
+            minPoolSize: 5,
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 45000,
         };
 
-        cached.promise = MongoClient.connect(MONGODB_URI, opts).then((client) => {
-            return {
-                client,
-                db: client.db('shopcrud'),
-            };
+        cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+            return { db: mongoose.connection.db, client: mongoose.connection.client };
         });
     }
-    cached.conn = await cached.promise;
+
+    try {
+        cached.conn = await cached.promise;
+    } catch (e) {
+        cached.promise = null;
+        throw e;
+    }
+
     return cached.conn;
 }
 
-// Default export for backward compatibility
-export default connectToDatabase;
+export { connectToDatabase };
+

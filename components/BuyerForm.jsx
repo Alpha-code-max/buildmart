@@ -110,7 +110,7 @@ export default function NameForm() {
               <Link href={'/MapPage'}>Use GPS Location</Link>
             </button>
 
-          <Link href="/PaymentPage">
+          <Link href="/OrderDetails">
             <button
               type="submit" className="border-blue-500 border-1 hover:text-white hover:bg-blue-600 text-blue-500 font-semibold px-6 py-2 rounded-md transition w-full">
               Proceed to Payment

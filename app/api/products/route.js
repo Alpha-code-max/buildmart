@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/libs/mongodb";
 import Product from "@/models/product";
 import { NextResponse } from "next/server";
+import mongoose from 'mongoose';
 
 // Add CORS headers
 const corsHeaders = {
@@ -16,6 +17,8 @@ export async function OPTIONS() {
 export async function POST(request) {
     try {
         const { size, name, amount, quality, image } = await request.json();
+        console.log('Received product data:', { size, name, amount, quality, image });
+        
         const { db } = await connectToDatabase();
         
         if (!db) {
@@ -25,16 +28,22 @@ export async function POST(request) {
             );
         }
         
-        // Ensure image is a string URL or use default
+        // Ensure image is a valid URL or use default
         const productData = { 
             size, 
             name, 
-            amount, 
+            amount: parseFloat(amount), 
             quality,
-            image: typeof image === 'string' ? image : "https://picsum.photos/300/200"
+            image: image && typeof image === 'string' && image.trim() !== '' 
+                ? image.trim() 
+                : "https://picsum.photos/300/200"
         };
         
+        console.log('Creating product with data:', productData);
+        
         const product = await Product.create(productData);
+        console.log('Created product:', product);
+        
         return NextResponse.json({ message: "Product Created", product }, { status: 201 });
     } catch (error) {
         console.error('Error creating product:', error);
@@ -47,35 +56,81 @@ export async function POST(request) {
 
 export async function GET() {
     try {
-        console.log('Attempting to connect to database...');
-        const { db } = await connectToDatabase();
+        console.log('Checking MongoDB connection...');
         
-        if (!db) {
-            console.error('Database connection failed');
+        if (!process.env.MONGODB_URI) {
+            console.error('MONGODB_URI is missing');
             return NextResponse.json(
-                { message: "Database connection not available" },
                 { 
-                    status: 503,
+                    message: "Database configuration error",
+                    error: "MONGODB_URI environment variable is missing"
+                },
+                { 
+                    status: 500,
                     headers: corsHeaders
                 }
             );
         }
+
+        // Check if we're already connected
+        if (mongoose.connection.readyState === 1) {
+            console.log('Already connected to MongoDB');
+        } else {
+            console.log('Connecting to MongoDB...');
+            const { db, client } = await connectToDatabase();
+            if (!db || !client) {
+                throw new Error('Failed to establish database connection');
+            }
+        }
+
+        console.log('Fetching products...');
+        const products = await Product.find().lean().maxTimeMS(5000);
+        console.log('Raw products from database:', JSON.stringify(products, null, 2));
         
-        console.log('Database connected, fetching products...');
-        const products = await Product.find().lean();
-        console.log(`Found ${products.length} products`);
+        // Ensure each product has an image
+        const productsWithImages = products.map(product => ({
+            ...product,
+            image: product.image || "https://picsum.photos/300/200"
+        }));
         
-        return NextResponse.json(products, { headers: corsHeaders });
+        console.log('Processed products with images:', JSON.stringify(productsWithImages, null, 2));
+        
+        return NextResponse.json(productsWithImages, { headers: corsHeaders });
     } catch (error) {
         console.error('Error in GET /api/products:', error);
+        console.error('Error stack:', error.stack);
+        console.error('Error details:', {
+            name: error.name,
+            message: error.message,
+            code: error.code
+        });
+        
+        // Handle specific MongoDB errors
+        let status = 500;
+        let errorMessage = error.message;
+        
+        if (error.name === 'MongooseError') {
+            if (error.message.includes('timed out')) {
+                status = 504; // Gateway Timeout
+                errorMessage = 'Database operation timed out';
+            } else if (error.message.includes('connection')) {
+                status = 503; // Service Unavailable
+                errorMessage = 'Database connection error';
+            }
+        }
+        
         return NextResponse.json(
             { 
                 message: "Error fetching products", 
-                error: error.message,
-                stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+                error: errorMessage,
+                details: {
+                    name: error.name,
+                    code: error.code,
+                    type: error.name === 'MongooseError' ? 'Database Error' : 'Server Error'
+                }
             },
             { 
-                status: 500,
+                status,
                 headers: corsHeaders
             }
         );

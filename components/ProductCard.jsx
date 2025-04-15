@@ -57,53 +57,59 @@ export default function ProductCard({ product, onAddToCart, onRemoveFromCart }) 
     };
 
     return (
-        <div className="rounded-lg shadow-lg bg-white dark:bg-gray-800 p-4 hover:shadow-xl transition-shadow duration-300">
-            <Image
-                src={product.image || "https://picsum.photos/300/200"}
-                alt={product.name}
-                width={300}
-                height={200}
-                className="w-full h-48 object-cover rounded-lg mb-4"
-            />
+        <div className="rounded-lg shadow-lg bg-white dark:bg-gray-800 p-4 hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+            <div className="relative w-full aspect-w-16 aspect-h-9 mb-4">
+                <img
+                    src={product.image || "https://picsum.photos/300/200"}
+                    alt={product.name}
+                    className="object-cover rounded-lg w-full h-full"
+                />
+            </div>
 
-            <div className="space-y-2">
-                <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200">{product.name}</h2>
-                <p className="text-gray-600 dark:text-gray-400">Size: {product.size}</p>
-                <p className="text-gray-600 dark:text-gray-400">Quality: {product.quality}</p>
-                <p className="text-gray-600 dark:text-gray-400">Amount: {product.amount}</p>
+            <div className="flex flex-col flex-grow space-y-2">
+                <h2 className="font-semibold text-lg sm:text-xl text-gray-800 dark:text-gray-200 line-clamp-2">
+                    {product.name}
+                </h2>
+                <div className="space-y-1 text-sm sm:text-base">
+                    <p className="text-gray-600 dark:text-gray-400">Size: {product.size}</p>
+                    <p className="text-gray-600 dark:text-gray-400">Quality: {product.quality}</p>
+                    <p className="text-gray-600 dark:text-gray-400">Amount: ₦{product.amount.toLocaleString()}</p>
+                </div>
 
-                <button
-                    onClick={handleCartAction}
-                    className={`w-full py-2 px-4 rounded-md text-white font-medium transition-colors duration-200 ${
-                        isInCart(product._id)
-                            ? 'bg-red-500 hover:bg-red-600'
-                            : 'bg-blue-500 hover:bg-blue-600'
-                    }`}
-                >
-                    {isInCart(product._id) ? 'Remove from Cart' : 'Add to Cart'}
-                </button>
+                <div className="mt-auto pt-4">
+                    <button
+                        onClick={handleCartAction}
+                        className={`w-full py-2 px-4 rounded-md text-white font-medium transition-colors duration-200 ${
+                            isInCart(product._id)
+                                ? 'bg-red-500 hover:bg-red-600'
+                                : 'bg-blue-500 hover:bg-blue-600'
+                        }`}
+                    >
+                        {isInCart(product._id) ? 'Remove from Cart' : 'Add to Cart'}
+                    </button>
 
-                {isInCart(product._id) && (
-                    <div className="flex items-center justify-between mt-3">
-                        <span className="text-sm text-gray-700">Quantity: {quantity}</span>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={handleAddQuantity}
-                                className="text-blue-500 hover:text-blue-600 transition-colors"
-                                title="Increase quantity"
-                            >
-                                <MdAddCircle size={24} />
-                            </button>
-                            <button
-                                onClick={handleSubtractQuantity}
-                                className="text-red-500 hover:text-red-600 transition-colors"
-                                title="Decrease quantity"
-                            >
-                                <MdRemoveCircle size={24} />
-                            </button>
+                    {isInCart(product._id) && (
+                        <div className="flex items-center justify-between mt-3">
+                            <span className="text-sm text-gray-700 dark:text-gray-300">Quantity: {quantity}</span>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleAddQuantity}
+                                    className="text-blue-500 hover:text-blue-600 transition-colors"
+                                    title="Increase quantity"
+                                >
+                                    <MdAddCircle size={24} />
+                                </button>
+                                <button
+                                    onClick={handleSubtractQuantity}
+                                    className="text-red-500 hover:text-red-600 transition-colors"
+                                    title="Decrease quantity"
+                                >
+                                    <MdRemoveCircle size={24} />
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );

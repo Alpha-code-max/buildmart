@@ -32,28 +32,92 @@ export default function CartPage() {
         <div className="p-4">
             <h1 className="text-2xl font-bold text-gray-800 mb-6">Shopping Cart</h1>
             
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+            {items.length === 0 ? (
+                <div className="text-center py-8">
+                    <p className="text-gray-600">Your cart is empty</p>
+                </div>
+            ) : (
+                <>
+                    {/* Desktop Table */}
+                    <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {items.map((item) => (
+                                    <tr key={item._id} className="hover:bg-gray-50">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                                            <div className="text-sm text-gray-500">{item.quality}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900">₦{item.amount.toLocaleString()}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => handleSubtractQuantity(item)}
+                                                    className="text-red-500 hover:text-red-600 transition-colors p-1"
+                                                    title="Decrease quantity"
+                                                >
+                                                    <MdRemoveCircle size={18} />
+                                                </button>
+                                                <span className="text-gray-700 min-w-[20px] text-center">{item.quantity}</span>
+                                                <button
+                                                    onClick={() => handleAddQuantity(item)}
+                                                    className="text-blue-500 hover:text-blue-600 transition-colors p-1"
+                                                    title="Increase quantity"
+                                                >
+                                                    <MdAddCircle size={18} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900">
+                                                ₦{(item.amount * item.quantity).toLocaleString()}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <button
+                                                onClick={() => handleRemoveItem(item._id)}
+                                                className="text-red-500 hover:text-red-600 transition-colors p-1"
+                                                title="Remove item"
+                                            >
+                                                <MdDelete size={18} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Mobile List */}
+                    <div className="md:hidden space-y-4">
                         {items.map((item) => (
-                            <tr key={item._id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm font-medium text-gray-900">{item.name}</div>
-                                    <div className="text-sm text-gray-500">{item.quality}</div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900">₦{item.amount.toLocaleString()}</div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
+                            <div key={item._id} className="bg-white rounded-lg shadow p-4">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h3 className="font-medium text-gray-900">{item.name}</h3>
+                                        <p className="text-sm text-gray-500">{item.quality}</p>
+                                    </div>
+                                    <button
+                                        onClick={() => handleRemoveItem(item._id)}
+                                        className="text-red-500 hover:text-red-600 transition-colors"
+                                        title="Remove item"
+                                    >
+                                        <MdDelete size={18} />
+                                    </button>
+                                </div>
+                                <div className="mt-2 flex justify-between items-center">
+                                    <div className="text-gray-900">₦{item.amount.toLocaleString()}</div>
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => handleSubtractQuantity(item)}
@@ -71,45 +135,35 @@ export default function CartPage() {
                                             <MdAddCircle size={18} />
                                         </button>
                                     </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900">
-                                        ₦{(item.amount * item.quantity).toLocaleString()}
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <button
-                                        onClick={() => handleRemoveItem(item._id)}
-                                        className="text-red-500 hover:text-red-600 transition-colors p-1"
-                                        title="Remove item"
-                                    >
-                                        <MdDelete size={18} />
-                                    </button>
-                                </td>
-                            </tr>
+                                </div>
+                                <div className="mt-2 text-right font-medium">
+                                    Total: ₦{(item.amount * item.quantity).toLocaleString()}
+                                </div>
+                            </div>
                         ))}
-                    </tbody>
-                </table>
+                    </div>
 
-                <div className="bg-gray-50 px-6 py-4">
-                    <div className="space-y-2">
-                        <div className="flex justify-between text-gray-700">
-                            <span>Subtotal ({totalItems} items):</span>
-                            <span className="font-medium">₦{totalPrice.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between text-gray-700">
-                            <span>Delivery Fee (20%):</span>
-                            <span className="font-medium">₦{deliveryFee.toLocaleString()}</span>
-                        </div>
-                        <div className="border-t pt-2">
-                            <div className="flex justify-between text-gray-900 font-bold">
-                                <span>Total:</span>
-                                <span>₦{total.toLocaleString()}</span>
+                    {/* Summary Section */}
+                    <div className="mt-6 bg-gray-50 rounded-lg p-4">
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-gray-700">
+                                <span>Subtotal ({totalItems} items):</span>
+                                <span className="font-medium">₦{totalPrice.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between text-gray-700">
+                                <span>Delivery Fee (20%):</span>
+                                <span className="font-medium">₦{deliveryFee.toLocaleString()}</span>
+                            </div>
+                            <div className="border-t pt-2">
+                                <div className="flex justify-between text-gray-900 font-bold">
+                                    <span>Total:</span>
+                                    <span>₦{total.toLocaleString()}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                </>
+            )}
         </div>
     );
 } 
