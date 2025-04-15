@@ -2,7 +2,8 @@ import { MongoClient } from 'mongodb';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-if (!MONGODB_URI) {
+// Only throw error if we're not in a build process
+if (!MONGODB_URI && process.env.NODE_ENV !== 'production') {
     throw new Error('Please define the MONGODB_URI environment variable inside .env');
 }
 
@@ -13,6 +14,10 @@ if (!cached) {
 }
 
 export async function connectToDatabase() {
+    if (!MONGODB_URI) {
+        return { db: null, client: null };
+    }
+
     if (cached.conn) {
         return cached.conn;
     }

@@ -7,6 +7,13 @@ export async function POST(request) {
         const { size, name, amount, quality, image } = await request.json();
         const { db } = await connectToDatabase();
         
+        if (!db) {
+            return NextResponse.json(
+                { message: "Database connection not available" },
+                { status: 503 }
+            );
+        }
+        
         // Ensure image is a string URL or use default
         const productData = { 
             size, 
@@ -30,6 +37,14 @@ export async function POST(request) {
 export async function GET() {
     try {
         const { db } = await connectToDatabase();
+        
+        if (!db) {
+            return NextResponse.json(
+                { message: "Database connection not available" },
+                { status: 503 }
+            );
+        }
+        
         const products = await Product.find().lean();
         return NextResponse.json(products);
     } catch (error) {
@@ -52,6 +67,14 @@ export async function DELETE(request) {
         }
 
         const { db } = await connectToDatabase();
+        
+        if (!db) {
+            return NextResponse.json(
+                { message: "Database connection not available" },
+                { status: 503 }
+            );
+        }
+        
         const deletedProduct = await Product.findByIdAndDelete(id);
         
         if (!deletedProduct) {

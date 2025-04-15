@@ -8,6 +8,13 @@ export async function PUT(request, {params}) {
         const {newName: name, newQuality: quality, newSize: size, newAmount: amount, newImage: image} = await request.json();
         const { db } = await connectToDatabase();
         
+        if (!db) {
+            return NextResponse.json(
+                { message: "Database connection not available" },
+                { status: 503 }
+            );
+        }
+        
         const updatedProduct = await Product.findByIdAndUpdate(id, {
             name,
             amount,
@@ -34,6 +41,14 @@ export async function GET(request, {params}) {
     try {
         const {id} = params;
         const { db } = await connectToDatabase();
+        
+        if (!db) {
+            return NextResponse.json(
+                { message: "Database connection not available" },
+                { status: 503 }
+            );
+        }
+        
         const product = await Product.findById(id);
         
         if (!product) {
