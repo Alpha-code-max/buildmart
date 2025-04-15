@@ -3,20 +3,23 @@
 import LoadingBar from "@/components/Loader";
 import ProductCard from "@/components/ProductCard";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios"
+import axios from "axios";
 import useCart from "@/store/useCart";
 
 export default function CatalogPage() {
     const { addItem, removeItem } = useCart();
 
-    // Fetch products from API
     const fetchProducts = async () => {
         try {
-            const { data } = await axios.get('http://localhost:3000/api/products');
+            const response = await fetch('/api/products');
+            if (!response.ok) {
+                throw new Error('Failed to fetch products');
+            }
+            const data = await response.json();
             return data;
         } catch (error) {
             console.error('Error fetching products:', error);
-            throw error;
+            throw new Error('Failed to fetch products');
         }
     };
 
@@ -30,7 +33,10 @@ export default function CatalogPage() {
     if (isLoading) return <div><LoadingBar /></div>;
     
     // Handle error state
-    if (error) return <div className="text-red-500 text-center p-4">An error occurred while loading products</div>;
+    if (error) {
+        console.error('Error state:', error);
+        return <div className="text-red-500 text-center p-4">An error occurred while loading products</div>;
+    }
 
     // Handle empty state
     if (!products || products.length === 0) {

@@ -1,28 +1,75 @@
 import connectMongoDb from "@/libs/mongodb";
-import Product from "@/models/price";
+import Product from "@/models/product";
 import { NextResponse } from "next/server";
 
-
 export async function POST(request) {
-    const {size, name, amount, quality} = await request.json()
-    await connectMongoDb()
-    await Product.create({size, name, amount, quality})
-    return NextResponse.json({message: "Product Created"}, {status: 201})
+    try {
+        const { size, name, amount, quality, image } = await request.json();
+        await connectMongoDb();
+        
+        // Ensure image is a string URL or use default
+        const productData = { 
+            size, 
+            name, 
+            amount, 
+            quality,
+            image: typeof image === 'string' ? image : "https://picsum.photos/300/200"
+        };
+        
+        const product = await Product.create(productData);
+        return NextResponse.json({ message: "Product Created", product }, { status: 201 });
+    } catch (error) {
+        console.error('Error creating product:', error);
+        return NextResponse.json(
+            { message: "Error creating product", error: error.message },
+            { status: 500 }
+        );
+    }
 }
 
 export async function GET() {
-    await connectMongoDb()
-    const product = await Product.find()
-    return NextResponse.json(product)
+    try {
+        await connectMongoDb();
+        const products = await Product.find().lean();
+        return NextResponse.json(products);
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        return NextResponse.json(
+            { message: "Error fetching products", error: error.message },
+            { status: 500 }
+        );
+    }
 }
 
 export async function DELETE(request) {
-    const id = request.nextUrl.searchParams.get('id')
-    await connectMongoDb();
-    const searchedProduct = await Product.findByIdAndDelete(id)
-    if (!searchedProduct) {
-        return NextResponse.json({message: "Product is not found"}, {status: 201})
-    } else {
-        return NextResponse.json({message: "Product Deleted"}, {status: 201})
+    try {
+        const id = request.nextUrl.searchParams.get('id');
+        if (!id) {
+            return NextResponse.json(
+                { message: "Product ID is required" },
+                { status: 400 }
+            );
+        }
+
+        await connectMongoDb();
+        const deletedProduct = await Product.findByIdAndDelete(id);
+        
+        if (!deletedProduct) {
+            return NextResponse.json(
+                { message: "Product not found" },
+                { status: 404 }
+            );
+        }
+
+        return NextResponse.json(
+            { message: "Product Deleted", product: deletedProduct },
+            { status: 200 }
+        );
+    } catch (error) {
+        console.error('Error deleting product:', error);
+        return NextResponse.json(
+            { message: "Error deleting product", error: error.message },
+            { status: 500 }
+        );
     }
 }

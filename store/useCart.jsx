@@ -100,7 +100,11 @@ const useCart = create(
     }),
     {
       name: "shopping-cart", // name for localStorage
-      skipHydration: true, // prevents hydration issues with Next.js
+      skipHydration: false, // Changed to false to ensure hydration
+      onRehydrate: () => (state) => {
+        // Optional: You can add any rehydration logic here
+        console.log("Cart rehydrated:", state);
+      }
     }
   )
 );

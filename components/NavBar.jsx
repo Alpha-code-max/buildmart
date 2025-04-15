@@ -17,13 +17,13 @@ export default function NavBar() {
 
 
   return (
-    <div className="flex bg-gray-100 justify-between items-end text-blue-500 py-5 border-b-2 px-14 border-blue-500">
+    <div className="flex bg-gray-100 dark:bg-gray-800 justify-between items-end text-blue-500 dark:text-blue-400 py-5 border-b-2 px-14 border-blue-500 dark:border-blue-400">
       <div>
         <Logo />
       </div>
 
       {showLinks && (
-        <div className="flex justify-between items-center font-bold gap-6 text-blue py-2 px-4 rounded-3xl w-2/6">
+        <div className="flex justify-between items-center font-bold gap-6 text-blue-500 dark:text-blue-400 py-2 px-4 rounded-3xl w-2/6">
           <Link href={"/CatalogPage"}>Materials</Link>
           <Link href={"/ShoppingCartPage"}>Cart</Link>
           <Link href={"/CheckoutPage"}>Orders</Link>

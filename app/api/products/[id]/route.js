@@ -1,24 +1,23 @@
 import connectMongoDb from "@/libs/mongodb";
-import Product from "@/models/price";
+import Product from "@/models/product";
 import { NextResponse } from "next/server";
-
 
 export async function PUT(request, {params}) {
     const {id} = await params;
-    const {newName: name, newQuality: quality, newSize: size, newAmount: amount} = await request.json();
+    const {newName: name, newQuality: quality, newSize: size, newAmount: amount, newImage: image} = await request.json();
     await connectMongoDb();
     const updatedProduct = await Product.findByIdAndUpdate(id,{
         name,
         amount,
         size,
-        quality
- 
+        quality,
+        image
     });
     if (!updatedProduct) {
-            return NextResponse.json({message: "Product is not found"}, {status: 201})
-        } else {
-            return NextResponse.json({message: "Product Updated"}, {status: 201})
-        }
+        return NextResponse.json({message: "Product is not found"}, {status: 404})
+    } else {
+        return NextResponse.json({message: "Product Updated"}, {status: 200})
+    }
 }
 
 export async function GET(request, {params}) {

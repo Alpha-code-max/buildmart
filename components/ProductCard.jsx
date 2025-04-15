@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { MdAddCircle, MdRemoveCircle } from "react-icons/md";
 import useCart from "@/store/useCart";
+import Image from "next/image";
 
 export default function ProductCard({ product, onAddToCart, onRemoveFromCart }) {
     const { isInCart, items, updateQuantity } = useCart();
@@ -10,8 +11,8 @@ export default function ProductCard({ product, onAddToCart, onRemoveFromCart }) 
 
     // Debug product data
     useEffect(() => {
-        console.log('Product Data:', product);
-        console.log('Cart Items:', items);
+        // console.log('Product Data:', product);
+        // console.log('Cart Items:', items);
     }, [product, items]);
 
     // Initialize quantity from cart if item exists
@@ -43,8 +44,8 @@ export default function ProductCard({ product, onAddToCart, onRemoveFromCart }) 
     };
 
     const handleCartAction = () => {
-        console.log('Cart Action - Product:', product);
-        console.log('Is in cart:', isInCart(product._id));
+        // console.log('Cart Action - Product:', product);
+        // console.log('Is in cart:', isInCart(product._id));
         
         if (isInCart(product._id)) {
             onRemoveFromCart();
@@ -56,24 +57,20 @@ export default function ProductCard({ product, onAddToCart, onRemoveFromCart }) 
     };
 
     return (
-        <div className="rounded-lg shadow-lg bg-white p-4 hover:shadow-xl transition-shadow duration-300">
-            <img
-                src="https://via.placeholder.com/300x200"
+        <div className="rounded-lg shadow-lg bg-white dark:bg-gray-800 p-4 hover:shadow-xl transition-shadow duration-300">
+            <Image
+                src={product.image || "https://picsum.photos/300/200"}
                 alt={product.name}
+                width={300}
+                height={200}
                 className="w-full h-48 object-cover rounded-lg mb-4"
             />
 
             <div className="space-y-2">
-                <h2 className="font-semibold text-xl text-gray-800">{product.name}</h2>
-                <p className="text-gray-600 text-sm">
-                    <span className="font-medium">Quality:</span> {product.quality}
-                </p>
-                <p className="text-gray-600 text-sm">
-                    <span className="font-medium">Size:</span> {product.size}
-                </p>
-                <p className="font-semibold text-lg text-blue-600">
-                    ₦{product.amount.toLocaleString()}
-                </p>
+                <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200">{product.name}</h2>
+                <p className="text-gray-600 dark:text-gray-400">Size: {product.size}</p>
+                <p className="text-gray-600 dark:text-gray-400">Quality: {product.quality}</p>
+                <p className="text-gray-600 dark:text-gray-400">Amount: {product.amount}</p>
 
                 <button
                     onClick={handleCartAction}

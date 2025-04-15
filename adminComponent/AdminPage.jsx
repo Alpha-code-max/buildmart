@@ -19,16 +19,28 @@ export default function AdminPage() {
       name: data.name,
       quality: data.quality,
       amount: parseFloat(data.amount),
-      size: data.size
+      size: data.size,
+      image: data.image
     };
 
     try {
-      await axios.post("/api/products", product);
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(product)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add product');
+      }
+
       setMessage("✅ Product added successfully!");
       reset();
     } catch (err) {
       console.error(err);
-      setMessage("❌ Failed to add product.");
+      setMessage("�� Failed to add product.");
     }
 
     redirect('/CatalogPage')
@@ -38,7 +50,7 @@ export default function AdminPage() {
     <div className="max-w-md mx-auto p-6">
       <h2 className="text-2xl font-bold mb-4">Add New Product</h2>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} method="GET" className="space-y-4">
         <div>
           <label className="block mb-1">Name</label>
           <input
@@ -70,11 +82,26 @@ export default function AdminPage() {
 
         <div>
           <label className="block mb-1">Size</label>
-          <input
+          <select
             {...register("size", { required: true })}
+            className="w-full border px-3 py-2 rounded bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="" disabled>Select size</option>
+            <option value="Small">Small</option>
+            <option value="Medium">Medium</option>
+            <option value="Large">Large</option>
+          </select>
+          {errors.size && <p className="text-red-500 text-sm">Size is required</p>}
+        </div>
+
+        <div>
+          <label className="block mb-1">Image URL</label>
+          <input
+            type="file"
+            {...register("image")}
             className="w-full border px-3 py-2 rounded"
           />
-          {errors.size && <p className="text-red-500 text-sm">Size is required</p>}
+          {errors.image && <p className="text-red-500 text-sm">Image URL is required</p>}
         </div>
 
         <button
