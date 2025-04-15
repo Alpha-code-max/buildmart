@@ -33,3 +33,6 @@ export async function connectToDatabase() {
     cached.conn = await cached.promise;
     return cached.conn;
 }
+
+// Default export for backward compatibility
+export default connectToDatabase;

@@ -1,11 +1,11 @@
-import connectMongoDb from "@/libs/mongodb";
+import { connectToDatabase } from "@/libs/mongodb";
 import Product from "@/models/product";
 import { NextResponse } from "next/server";
 
 export async function POST(request) {
     try {
         const { size, name, amount, quality, image } = await request.json();
-        await connectMongoDb();
+        const { db } = await connectToDatabase();
         
         // Ensure image is a string URL or use default
         const productData = { 
@@ -29,7 +29,7 @@ export async function POST(request) {
 
 export async function GET() {
     try {
-        await connectMongoDb();
+        const { db } = await connectToDatabase();
         const products = await Product.find().lean();
         return NextResponse.json(products);
     } catch (error) {
@@ -51,7 +51,7 @@ export async function DELETE(request) {
             );
         }
 
-        await connectMongoDb();
+        const { db } = await connectToDatabase();
         const deletedProduct = await Product.findByIdAndDelete(id);
         
         if (!deletedProduct) {
